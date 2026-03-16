@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>待办事项</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(180deg, #FFF8E7 0%, #FFEFD5 50%, #F5DEB3 100%);
+            min-height: 100vh;
+            color: #5D4037;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bg-image {
+            display: none;
+        }
+
+        /* 手机容器 */
+        .phone {
+            width: 100%;
+            max-width: 380px;
+            height: 100vh;
+            max-height: 750px;
+            background-image: url('d587ac4e17a7b324a62417fc0ec58219.jpeg'), rgba(255, 255, 255, 0.85);
+            background-size: cover;
+            background-position: center;
+            background-blend-mode: overlay;
+            border: 3px solid #5D4037;
+            border-radius: 30px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 5px 5px 0 #5D4037;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 顶部状态栏 */
+        .status-bar {
+            height: 35px;
+            background: linear-gradient(90deg, #8D6E63, #A1887F);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 15px;
+            color: #FFF;
+            font-size: 12px;
+        }
+
+        /* 顶部标题区域 */
+        .header {
+            background: linear-gradient(180deg, #FFCC80 0%, #FFB74D 100%);
+            padding: 15px;
+            text-align: center;
+            position: relative;
+            border-bottom: 2px solid #5D4037;
+        }
+
+        /* 顶部小狗 - 使用图片 */
+        .header-puppy {
+            position: absolute;
+            bottom: -30px;
+            left: 20px;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            border: 2px solid #5D4037;
+            overflow: hidden;
+            background: #FFF;
+        }
+
+        .header-puppy img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .header h1 {
+            font-size: 1.2rem;
+            color: #5D4037;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .header h1::before, .header h1::after {
+            content: '❤';
+            color: #FF8A80;
+            font-size: 0.8rem;
+        }
+
+        /* 内容区域 */
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 15px;
+            position: relative;
+        }
+
+        /* 右下角小狗 - 使用图片 */
+        .content-puppy {
+            position: absolute;
+            bottom: 65px;
+            right: 5px;
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            border: 2px solid #5D4037;
+            overflow: hidden;
+            background: #FFF;
+            opacity: 0.9;
+        }
+
+        .content-puppy img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* 日期导航 */
+        .date-nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #FFF;
+            border: 2px solid #5D4037;
+            border-radius: 15px;
+            padding: 10px 12px;
+            margin-bottom: 12px;
+        }
+
+        .date-nav button {
+            background: #FFCC80;
+            color: #5D4037;
+            border: 2px solid #5D4037;
+            padding: 5px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .date-nav button:hover {
+            background: #FFB74D;
+            transform: scale(1.05);
+        }
+
+        .date-nav span {
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        /* 快捷日期 */
+        .quick-dates {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .quick-dates button {
+            padding: 6px 12px;
+            background: #FFF;
+            color: #5D4037;
+            border: 2px solid #5D4037;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .quick-dates button:hover, .quick-dates button.active {
+            background: #FF8A80;
+            color: #FFF;
+            transform: scale(1.05);
+        }
+
+        /* 输入框 */
+        .input-box {
+            background: #FFF;
+            border: 2px solid #5D4037;
+            border-radius: 15px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        input[type="text"], input[type="date"], select {
+            flex: 1;
+            padding: 8px 10px;
+            border: 2px solid #5D4037;
+            border-radius: 12px;
+            font-size: 13px;
+            outline: none;
+            background: #FFF;
+            color: #5D4037;
+        }
+
+        input[type="date"] {
+            min-width: 100px;
+        }
+
+        select {
+            padding: 8px 10px;
+        }
+
+        button.add-btn {
+            width: 100%;
+            padding: 10px;
+            background: #FF8A80;
+            color: #FFF;
+            border: 2px solid #5D4037;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        button.add-btn:hover {
+            background: #FF5252;
+            transform: scale(1.02);
+        }
+
+        /* 待办列表 */
+        .todo-list {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #5D4037;
+            border-radius: 15px;
+            padding: 10px;
+            min-height: 150px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 25px 10px;
+            color: #A1887F;
+        }
+
+        .empty-state img {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+            border: 2px solid #5D4037;
+        }
+
+        .empty-state p {
+            font-size: 13px;
+        }
+
+        .todo-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: #FFFDF7;
+            border: 2px solid #5D4037;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+        }
+
+        .todo-item:hover {
+            background: #FFF3E0;
+            transform: translateX(3px);
+        }
+
+        .todo-item.completed {
+            background: #F5F5F5;
+            opacity: 0.7;
+        }
+
+        .todo-item.completed .todo-text {
+            text-decoration: line-through;
+            color: #9E9E9E;
+        }
+
+        .todo-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
+            cursor: pointer;
+            accent-color: #FF8A80;
+        }
+
+        .todo-text {
+            flex: 1;
+            font-size: 13px;
+            word-break: break-all;
+        }
+
+        .todo-meta {
+            display: flex;
+            gap: 4px;
+            margin-right: 6px;
+        }
+
+        .repeat-tag {
+            padding: 2px 6px;
+            background: #C8E6C9;
+            color: #388E3C;
+            border: 1px solid #388E3C;
+            border-radius: 8px;
+            font-size: 9px;
+            font-weight: 600;
+        }
+
+        .delete-btn {
+            padding: 4px 8px;
+            background: #FFCCBC;
+            color: #BF360B;
+            border: 2px solid #BF360B;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .delete-btn:hover {
+            background: #FFAB91;
+        }
+
+        .count {
+            color: #A1887F;
+            text-align: center;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+
+        /* 底部导航 */
+        .bottom-nav {
+            height: 55px;
+            background: #FFF;
+            display: flex;
+            border-top: 2px solid #5D4037;
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            padding: 8px;
+            background: transparent;
+            border: none;
+        }
+
+        .nav-item:hover {
+            background: #FFF3E0;
+        }
+
+        .nav-item.active {
+            background: #FFE0B2;
+        }
+
+        .nav-item svg {
+            width: 22px;
+            height: 22px;
+            fill: #A1887F;
+            margin-bottom: 2px;
+        }
+
+        .nav-item.active svg {
+            fill: #5D4037;
+        }
+
+        .nav-item span {
+            font-size: 10px;
+            color: #A1887F;
+        }
+
+        .nav-item.active span {
+            color: #5D4037;
+            font-weight: 600;
+        }
+
+        .panel {
+            display: none;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        /* 日历面板 */
+        .calendar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #FFF;
+            border: 2px solid #5D4037;
+            border-radius: 15px;
+            padding: 10px 12px;
+            margin-bottom: 12px;
+        }
+
+        .calendar-header button {
+            background: #FFCC80;
+            color: #5D4037;
+            border: 2px solid #5D4037;
+            padding: 5px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .calendar-header button:hover {
+            background: #FFB74D;
+        }
+
+        .calendar-header span {
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        .calendar-grid {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #5D4037;
+            border-radius: 15px;
+            padding: 12px;
+        }
+
+        .calendar-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 2px;
+            margin-bottom: 6px;
+        }
+
+        .weekday {
+            text-align: center;
+            color: #A1887F;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 6px 0;
+        }
+
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 3px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 12px;
+            min-height: 38px;
+            background: transparent;
+            border: 2px solid transparent;
+        }
+
+        .calendar-day:hover {
+            background: #FFF3E0;
+            border-color: #5D4037;
+        }
+
+        .calendar-day.other-month {
+            color: #D7CCC8;
+        }
+
+        .calendar-day.today {
+            background: #FF8A80;
+            border-color: #5D4037;
+            color: #FFF;
+        }
+
+        .calendar-day.selected {
+            background: #5D4037;
+            color: #FFF;
+        }
+
+        .task-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: #81D4FA;
+            border: 1px solid #5D4037;
+            margin-top: 1px;
+        }
+
+        .task-dot.completed {
+            background: #A5D6A7;
+        }
+
+        /* 用户面板 */
+        .user-panel {
+            text-align: center;
+            padding: 10px;
+        }
+
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #FFF;
+            border: 3px solid #5D4037;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 3px 3px 0 #5D4037;
+            overflow: hidden;
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .login-form, .register-form, .sms-form {
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #5D4037;
+            border-radius: 15px;
+            padding: 15px;
+        }
+
+        .form-title {
+            text-align: center;
+            margin-bottom: 12px;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 4px;
+            color: #8D6E63;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 8px 10px;
+            border: 2px solid #5D4037;
+            border-radius: 12px;
+            font-size: 13px;
+            outline: none;
+            background: #FFF;
+        }
+
+        .form-btn {
+            width: 100%;
+            padding: 10px;
+            background: #FF8A80;
+            color: #FFF;
+            border: 2px solid #5D4037;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 6px;
+        }
+
+        .form-btn:hover {
+            background: #FF5252;
+        }
+
+        .form-btn:disabled {
+            background: #D7CCC8;
+            cursor: not-allowed;
+        }
+
+        .form-switch {
+            text-align: center;
+            margin-top: 10px;
+            color: #8D6E63;
+            font-size: 12px;
+        }
+
+        .form-switch a {
+            color: #E64A19;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-tabs {
+            display: flex;
+            margin-bottom: 12px;
+            background: #FFFDF7;
+            border: 2px solid #5D4037;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .login-tab {
+            flex: 1;
+            padding: 8px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            background: transparent;
+            border: none;
+            color: #A1887F;
+        }
+
+        .login-tab.active {
+            background: #FF8A80;
+            color: #FFF;
+        }
+
+        .phone-input {
+            display: flex;
+            gap: 6px;
+        }
+
+        .phone-input select {
+            width: 65px;
+            flex-shrink: 0;
+        }
+
+        .sms-code-input {
+            display: flex;
+            gap: 6px;
+        }
+
+        .sms-code-input input {
+            flex: 1;
+        }
+
+        .sms-code-input .send-btn {
+            padding: 8px 10px;
+            background: #81D4FA;
+            color: #5D4037;
+            border: 2px solid #5D4037;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .sms-code-input .send-btn:hover {
+            background: #4FC3F7;
+        }
+
+        .sms-code-input .send-btn:disabled {
+            background: #D7CCC8;
+        }
+
+        .logout-btn {
+            background: #FFF;
+            color: #5D4037;
+            border: 2px solid #5D4037;
+            padding: 10px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 12px;
+        }
+
+        .logout-btn:hover {
+            background: #FFCCBC;
+        }
+
+        .user-info h2 {
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="phone">
+        <!-- 顶部状态栏 -->
+        <div class="status-bar">
+            <span>9:41</span>
+            <span>📶 🔋</span>
+        </div>
+
+        <!-- 顶部标题 -->
+        <div class="header">
+            <div class="header-puppy">
+                <img src="a67d121153023e22acd2eb37e2cc808c.jpeg" alt="小狗">
+            </div>
+            <h1>待办事项</h1>
+        </div>
+
+        <!-- 内容区域 -->
+        <div class="content">
+            <!-- 待办面板 -->
+            <div class="panel active" id="panel-todo">
+                <div class="date-nav">
+                    <button onclick="changeDate(-1)">前一天</button>
+                    <span id="currentDate"></span>
+                    <button onclick="changeDate(1)">后一天</button>
+                </div>
+
+                <div class="quick-dates">
+                    <button onclick="goToDate('today')" id="btnToday">今天</button>
+                    <button onclick="goToDate('tomorrow')" id="btnTomorrow">明天</button>
+                    <button onclick="goToDate('all')" id="btnAll">全部</button>
+                </div>
+
+                <div class="input-box">
+                    <div class="input-row">
+                        <input type="text" id="todoInput" placeholder="添加新任务...">
+                    </div>
+                    <div class="input-row">
+                        <input type="date" id="dateInput">
+                        <select id="repeatSelect">
+                            <option value="none">不重复</option>
+                            <option value="daily">每天</option>
+                            <option value="weekly">每周</option>
+                            <option value="weekday">工作日</option>
+                        </select>
+                    </div>
+                    <button class="add-btn" onclick="addTodo()">添加任务</button>
+                </div>
+
+                <div class="todo-list" id="todoList"></div>
+                <div class="count" id="count"></div>
+            </div>
+
+            <!-- 日历面板 -->
+            <div class="panel" id="panel-calendar">
+                <div class="calendar-header">
+                    <button onclick="changeMonth(-1)">上月</button>
+                    <span id="calendarMonth"></span>
+                    <button onclick="changeMonth(1)">下月</button>
+                </div>
+
+                <div class="calendar-grid">
+                    <div class="calendar-weekdays">
+                        <div class="weekday">日</div>
+                        <div class="weekday">一</div>
+                        <div class="weekday">二</div>
+                        <div class="weekday">三</div>
+                        <div class="weekday">四</div>
+                        <div class="weekday">五</div>
+                        <div class="weekday">六</div>
+                    </div>
+                    <div class="calendar-days" id="calendarDays"></div>
+                </div>
+            </div>
+
+            <!-- 用户面板 -->
+            <div class="panel" id="panel-user">
+                <div class="user-panel">
+                    <div id="loginState">
+                        <div class="user-avatar">
+                            <img src="d587ac4e17a7b324a62417fc0ec58219.jpeg" alt="头像">
+                        </div>
+
+                        <div class="login-tabs">
+                            <div class="login-tab active" onclick="showLoginTab('password')" id="tabPassword">密码登录</div>
+                            <div class="login-tab" onclick="showLoginTab('sms')" id="tabSms">验证码</div>
+                        </div>
+
+                        <div class="login-form" id="loginForm">
+                            <div class="form-title">密码登录</div>
+                            <div class="form-group">
+                                <label>手机号</label>
+                                <div class="phone-input">
+                                    <select><option>+86</option></select>
+                                    <input type="tel" id="loginPhone" placeholder="请输入手机号">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>密码</label>
+                                <input type="password" id="loginPassword" placeholder="请输入密码">
+                            </div>
+                            <button class="form-btn" onclick="login()">登录</button>
+                            <div class="form-switch">
+                                还没有账号？<a onclick="showRegister()">立即注册</a>
+                            </div>
+                        </div>
+
+                        <div class="sms-form" id="smsLoginForm" style="display: none;">
+                            <div class="form-title">验证码登录</div>
+                            <div class="form-group">
+                                <label>手机号</label>
+                                <div class="phone-input">
+                                    <select><option>+86</option></select>
+                                    <input type="tel" id="smsLoginPhone" placeholder="请输入手机号">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>验证码</label>
+                                <div class="sms-code-input">
+                                    <input type="number" id="smsLoginCode" placeholder="请输入验证码">
+                                    <button class="send-btn" onclick="sendLoginCode()" id="sendLoginBtn">发送</button>
+                                </div>
+                            </div>
+                            <button class="form-btn" onclick="loginWithSms()">登录</button>
+                            <div class="form-switch">
+                                没有账号？<a onclick="showSmsRegister()">立即注册</a>
+                            </div>
+                        </div>
+
+                        <div class="register-form" id="registerForm" style="display: none;">
+                            <div class="form-title">注册</div>
+                            <div class="form-group">
+                                <label>手机号</label>
+                                <div class="phone-input">
+                                    <select><option>+86</option></select>
+                                    <input type="tel" id="registerPhone" placeholder="请输入手机号">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>密码</label>
+                                <input type="password" id="registerPassword" placeholder="请设置密码">
+                            </div>
+                            <div class="form-group">
+                                <label>确认密码</label>
+                                <input type="password" id="registerConfirmPassword" placeholder="请再次输入密码">
+                            </div>
+                            <button class="form-btn" onclick="register()">注册</button>
+                            <div class="form-switch">
+                                已有账号？<a onclick="showLogin()">立即登录</a>
+                            </div>
+                        </div>
+
+                        <div class="sms-form" id="smsRegisterForm" style="display: none;">
+                            <div class="form-title">验证码注册</div>
+                            <div class="form-group">
+                                <label>手机号</label>
+                                <div class="phone-input">
+                                    <select><option>+86</option></select>
+                                    <input type="tel" id="smsRegisterPhone" placeholder="请输入手机号">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>验证码</label>
+                                <div class="sms-code-input">
+                                    <input type="number" id="smsRegisterCode" placeholder="请输入验证码">
+                                    <button class="send-btn" onclick="sendRegisterCode()" id="sendRegisterBtn">发送</button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>设置密码</label>
+                                <input type="password" id="smsRegisterPassword" placeholder="请设置密码">
+                            </div>
+                            <button class="form-btn" onclick="registerWithSms()">注册</button>
+                            <div class="form-switch">
+                                已有账号？<a onclick="showSmsLogin()">立即登录</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="loggedInState" style="display: none;">
+                        <div class="user-avatar">
+                            <img src="2c4bdd066153f5361ce3e6d392a311be.jpeg" alt="头像">
+                        </div>
+                        <div class="user-info">
+                            <h2 id="userPhone"></h2>
+                            <button class="logout-btn" onclick="logout()">退出登录</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 右下角小狗 -->
+            <div class="content-puppy">
+                <img src="4de3dd69aa67c407321aad80889ab0f9.jpeg" alt="小狗">
+            </div>
+        </div>
+
+        <!-- 底部导航 -->
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="switchPanel('todo', this)">
+                <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zM17.99 9l-1.41-1.42-6.59 6.59-2.58-2.57-1.42 1.41 4 3.99z"/></svg>
+                <span>待办</span>
+            </div>
+            <div class="nav-item" onclick="switchPanel('calendar', this)">
+                <svg viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>
+                <span>日历</span>
+            </div>
+            <div class="nav-item" onclick="switchPanel('user', this)">
+                <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                <span>我的</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentDate = new Date();
+        let viewMode = 'day';
+        let calendarDate = new Date();
+        let selectedCalendarDate = null;
+
+        function init() {
+            setDefaultDate();
+            render();
+            renderCalendar();
+            checkLoginStatus();
+            updateNavButtons();
+        }
+
+        function switchPanel(panelName, navEl) {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            navEl.classList.add('active');
+            document.querySelectorAll('.panel').forEach(el => el.classList.remove('active'));
+            document.getElementById('panel-' + panelName).classList.add('active');
+        }
+
+        function setDefaultDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('dateInput').value = today;
+        }
+
+        function getDateStr(date) {
+            return date.toISOString().split('T')[0];
+        }
+
+        function formatDate(date) {
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+
+            if (getDateStr(date) === getDateStr(today)) {
+                return '今天';
+            } else if (getDateStr(date) === getDateStr(tomorrow)) {
+                return '明天';
+            } else {
+                const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+                return `${date.getMonth() + 1}月${date.getDate()}日`;
+            }
+        }
+
+        function getTodos() {
+            const todos = localStorage.getItem('todos');
+            return todos ? JSON.parse(todos) : [];
+        }
+
+        function saveTodos(todos) {
+            localStorage.setItem('todos', JSON.stringify(todos));
+        }
+
+        function shouldShowOnDate(todo, date) {
+            const todoDate = todo.date;
+            const checkDate = getDateStr(date);
+
+            if (todo.repeat === 'none') {
+                return todoDate === checkDate;
+            } else if (todo.repeat === 'daily') {
+                return true;
+            } else if (todo.repeat === 'weekly') {
+                const todoDateObj = new Date(todoDate);
+                return todoDateObj.getDay() === date.getDay();
+            } else if (todo.repeat === 'weekday') {
+                const day = date.getDay();
+                return day >= 1 && day <= 5;
+            }
+            return false;
+        }
+
+        function getTodosForDate(date) {
+            const todos = getTodos();
+            const result = [];
+            todos.forEach((todo, index) => {
+                if (shouldShowOnDate(todo, date)) {
+                    result.push({ ...todo, originalIndex: index });
+                }
+            });
+            return result;
+        }
+
+        function render() {
+            const dateDisplay = document.getElementById('currentDate');
+            const todoList = document.getElementById('todoList');
+            const count = document.getElementById('count');
+
+            dateDisplay.textContent = formatDate(currentDate);
+            const todos = getTodosForDate(currentDate);
+
+            if (todos.length === 0) {
+                todoList.innerHTML = `
+                    <div class="empty-state">
+                        <img src="2c4bdd066153f5361ce3e6d392a311be.jpeg" alt="小狗">
+                        <p>今日暂无任务</p>
+                    </div>
+                `;
+                count.textContent = '';
+                return;
+            }
+
+            todoList.innerHTML = todos.map((todo, displayIndex) => `
+                <div class="todo-item ${todo.completed ? 'completed' : ''}">
+                    <input type="checkbox" ${todo.completed ? 'checked' : ''} onchange="toggleTodo(${todo.originalIndex})">
+                    <span class="todo-text">${todo.text}</span>
+                    <div class="todo-meta">
+                        ${todo.repeat !== 'none' ? '<span class="repeat-tag">' + getRepeatText(todo.repeat) + '</span>' : ''}
+                    </div>
+                    <button class="delete-btn" onclick="deleteTodo(${todo.originalIndex})">删除</button>
+                </div>
+            `).join('');
+
+            const remaining = todos.filter(t => !t.completed).length;
+            count.textContent = `共 ${todos.length} 项，已完成 ${todos.length - remaining} 项`;
+            updateNavButtons();
+        }
+
+        function getRepeatText(repeat) {
+            const map = { 'daily': '每天', 'weekly': '每周', 'weekday': '工作日' };
+            return map[repeat] || repeat;
+        }
+
+        function updateNavButtons() {
+            const today = new Date();
+            document.getElementById('btnToday').classList.toggle('active', getDateStr(currentDate) === getDateStr(today));
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('btnTomorrow').classList.toggle('active', getDateStr(currentDate) === getDateStr(tomorrow));
+            document.getElementById('btnAll').classList.toggle('active', viewMode === 'all');
+        }
+
+        function changeDate(delta) {
+            currentDate.setDate(currentDate.getDate() + delta);
+            document.getElementById('dateInput').value = getDateStr(currentDate);
+            render();
+        }
+
+        function goToDate(mode) {
+            const today = new Date();
+            if (mode === 'today') {
+                currentDate = new Date(today);
+                viewMode = 'day';
+            } else if (mode === 'tomorrow') {
+                currentDate = new Date(today);
+                currentDate.setDate(currentDate.getDate() + 1);
+                viewMode = 'day';
+            } else if (mode === 'all') {
+                viewMode = 'all';
+            }
+            document.getElementById('dateInput').value = getDateStr(currentDate);
+            render();
+        }
+
+        function addTodo() {
+            const input = document.getElementById('todoInput');
+            const text = input.value.trim();
+            const date = document.getElementById('dateInput').value;
+            const repeat = document.getElementById('repeatSelect').value;
+
+            if (!text) { alert('请输入内容'); return; }
+            if (!date) { alert('请选择日期'); return; }
+
+            const todos = getTodos();
+            todos.push({
+                text,
+                date,
+                repeat,
+                completed: false,
+                createdAt: new Date().toISOString()
+            });
+            saveTodos(todos);
+
+            input.value = '';
+            render();
+            renderCalendar();
+        }
+
+        function toggleTodo(originalIndex) {
+            const todos = getTodos();
+            if (todos[originalIndex]) {
+                todos[originalIndex].completed = !todos[originalIndex].completed;
+                saveTodos(todos);
+            }
+            render();
+            renderCalendar();
+        }
+
+        function deleteTodo(originalIndex) {
+            const todos = getTodos();
+            todos.splice(originalIndex, 1);
+            saveTodos(todos);
+            render();
+            renderCalendar();
+        }
+
+        document.getElementById('todoInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') addTodo();
+        });
+
+        document.getElementById('dateInput').addEventListener('change', function() {
+            currentDate = new Date(this.value);
+            render();
+        });
+
+        function changeMonth(delta) {
+            calendarDate.setMonth(calendarDate.getMonth() + delta);
+            renderCalendar();
+        }
+
+        function renderCalendar() {
+            const monthDisplay = document.getElementById('calendarMonth');
+            const daysContainer = document.getElementById('calendarDays');
+
+            const year = calendarDate.getFullYear();
+            const month = calendarDate.getMonth();
+            monthDisplay.textContent = `${year}年${month + 1}月`;
+
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const startDay = firstDay.getDay();
+            const totalDays = lastDay.getDate();
+
+            const today = new Date();
+            const todayStr = getDateStr(today);
+
+            let html = '';
+            const prevMonthLastDay = new Date(year, month, 0).getDate();
+            for (let i = startDay - 1; i >= 0; i--) {
+                const day = prevMonthLastDay - i;
+                html += `<div class="calendar-day other-month"><span>${day}</span></div>`;
+            }
+
+            for (let day = 1; day <= totalDays; day++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const isToday = dateStr === todayStr;
+                const isSelected = selectedCalendarDate === dateStr;
+
+                const dayTodos = getTodos().filter(t => shouldShowOnDate(t, new Date(dateStr)));
+                const hasTask = dayTodos.length > 0;
+                const completedCount = dayTodos.filter(t => t.completed).length;
+
+                let dotsHtml = '';
+                if (hasTask) {
+                    const dotCount = Math.min(dayTodos.length, 3);
+                    for (let i = 0; i < dotCount; i++) {
+                        const isCompleted = i < completedCount;
+                        dotsHtml += `<div class="task-dot ${isCompleted ? 'completed' : ''}"></div>`;
+                    }
+                }
+
+                html += `
+                    <div class="calendar-day ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}" onclick="selectCalendarDate('${dateStr}')">
+                        <span>${day}</span>
+                        ${dotsHtml}
+                    </div>
+                `;
+            }
+
+            const remaining = 42 - (startDay + totalDays);
+            for (let day = 1; day <= remaining; day++) {
+                html += `<div class="calendar-day other-month"><span>${day}</span></div>`;
+            }
+
+            daysContainer.innerHTML = html;
+        }
+
+        function selectCalendarDate(dateStr) {
+            selectedCalendarDate = dateStr;
+            currentDate = new Date(dateStr);
+            document.getElementById('dateInput').value = dateStr;
+            render();
+            renderCalendar();
+            document.querySelectorAll('.nav-item')[0].click();
+        }
+
+        function getUsers() {
+            const users = localStorage.getItem('users');
+            return users ? JSON.parse(users) : {};
+        }
+
+        function saveUsers(users) {
+            localStorage.setItem('users', JSON.stringify(users));
+        }
+
+        function getCurrentUser() {
+            return localStorage.getItem('currentUser');
+        }
+
+        function setCurrentUser(phone) {
+            localStorage.setItem('currentUser', phone);
+        }
+
+        function checkLoginStatus() {
+            const user = getCurrentUser();
+            if (user) {
+                document.getElementById('loginState').style.display = 'none';
+                document.getElementById('loggedInState').style.display = 'block';
+                document.getElementById('userPhone').textContent = user;
+            } else {
+                document.getElementById('loginState').style.display = 'block';
+                document.getElementById('loggedInState').style.display = 'none';
+            }
+        }
+
+        function showLoginTab(tab) {
+            document.getElementById('tabPassword').classList.toggle('active', tab === 'password');
+            document.getElementById('tabSms').classList.toggle('active', tab === 'sms');
+            document.getElementById('loginForm').style.display = tab === 'password' ? 'block' : 'none';
+            document.getElementById('smsLoginForm').style.display = tab === 'sms' ? 'block' : 'none';
+        }
+
+        function showRegister() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('smsLoginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'block';
+            document.getElementById('smsRegisterForm').style.display = 'none';
+        }
+
+        function showLogin() {
+            document.getElementById('registerForm').style.display = 'none';
+            document.getElementById('smsRegisterForm').style.display = 'none';
+            showLoginTab('password');
+        }
+
+        function showSmsRegister() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('smsLoginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'none';
+            document.getElementById('smsRegisterForm').style.display = 'block';
+        }
+
+        function showSmsLogin() {
+            document.getElementById('registerForm').style.display = 'none';
+            document.getElementById('smsRegisterForm').style.display = 'none';
+            showLoginTab('sms');
+        }
+
+        function sendLoginCode() {
+            const phone = document.getElementById('smsLoginPhone').value.trim();
+            if (!phone) { alert('请输入手机号'); return; }
+
+            const btn = document.getElementById('sendLoginBtn');
+            let countdown = 60;
+            btn.disabled = true;
+            btn.textContent = `${countdown}s`;
+
+            const timer = setInterval(() => {
+                countdown--;
+                btn.textContent = `${countdown}s`;
+                if (countdown <= 0) {
+                    clearInterval(timer);
+                    btn.disabled = false;
+                    btn.textContent = '发送';
+                }
+            }, 1000);
+
+            alert(`验证码已发送至 ${phone}（演示：123456）`);
+        }
+
+        function sendRegisterCode() {
+            const phone = document.getElementById('smsRegisterPhone').value.trim();
+            if (!phone) { alert('请输入手机号'); return; }
+
+            const btn = document.getElementById('sendRegisterBtn');
+            let countdown = 60;
+            btn.disabled = true;
+            btn.textContent = `${countdown}s`;
+
+            const timer = setInterval(() => {
+                countdown--;
+                btn.textContent = `${countdown}s`;
+                if (countdown <= 0) {
+                    clearInterval(timer);
+                    btn.disabled = false;
+                    btn.textContent = '发送';
+                }
+            }, 1000);
+
+            alert(`验证码已发送至 ${phone}（演示：123456）`);
+        }
+
+        function login() {
+            const phone = document.getElementById('loginPhone').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            if (!phone || !password) { alert('请填写完整信息'); return; }
+
+            const users = getUsers();
+            if (users[phone] && users[phone].password === password) {
+                setCurrentUser(phone);
+                checkLoginStatus();
+                alert('登录成功！');
+            } else {
+                alert('手机号或密码错误');
+            }
+        }
+
+        function loginWithSms() {
+            const phone = document.getElementById('smsLoginPhone').value.trim();
+            const code = document.getElementById('smsLoginCode').value.trim();
+
+            if (!phone || !code) { alert('请填写完整信息'); return; }
+
+            if (code === '123456') {
+                const users = getUsers();
+                if (!users[phone]) {
+                    users[phone] = { password: '' };
+                    saveUsers(users);
+                }
+                setCurrentUser(phone);
+                checkLoginStatus();
+                alert('登录成功！');
+            } else {
+                alert('验证码错误（演示验证码：123456）');
+            }
+        }
+
+        function register() {
+            const phone = document.getElementById('registerPhone').value.trim();
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('registerConfirmPassword').value;
+
+            if (!phone || !password || !confirmPassword) { alert('请填写完整信息'); return; }
+            if (password !== confirmPassword) { alert('两次密码输入不一致'); return; }
+
+            const users = getUsers();
+            if (users[phone]) { alert('该手机号已注册'); return; }
+
+            users[phone] = { password: password };
+            saveUsers(users);
+            setCurrentUser(phone);
+            checkLoginStatus();
+            alert('注册成功！');
+        }
+
+        function registerWithSms() {
+            const phone = document.getElementById('smsRegisterPhone').value.trim();
+            const code = document.getElementById('smsRegisterCode').value.trim();
+            const password = document.getElementById('smsRegisterPassword').value;
+
+            if (!phone || !code || !password) { alert('请填写完整信息'); return; }
+            if (code !== '123456') { alert('验证码错误（演示验证码：123456）'); return; }
+
+            const users = getUsers();
+            if (users[phone]) { alert('该手机号已注册'); return; }
+
+            users[phone] = { password: password };
+            saveUsers(users);
+            setCurrentUser(phone);
+            checkLoginStatus();
+            alert('注册成功！');
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            checkLoginStatus();
+            document.getElementById('loginPhone').value = '';
+            document.getElementById('loginPassword').value = '';
+            document.getElementById('smsLoginPhone').value = '';
+            document.getElementById('smsLoginCode').value = '';
+            document.getElementById('registerPhone').value = '';
+            document.getElementById('registerPassword').value = '';
+            document.getElementById('registerConfirmPassword').value = '';
+            document.getElementById('smsRegisterPhone').value = '';
+            document.getElementById('smsRegisterCode').value = '';
+            document.getElementById('smsRegisterPassword').value = '';
+        }
+
+        init();
+    </script>
+</body>
+</html>
